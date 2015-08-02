@@ -1,0 +1,100 @@
+/* 
+01010000011100100110111101110100011011110010000001000111
+
+IoT Command Center
+
+Created March 31, 2015
+Modified April 12, 2015
+by Anthony Garofalo (Proto G)
+
+Visit my YouTube channel here: https://www.youtube.com/channel/UCpTuKJrXFwybnpOG7HpTpZw
+Visit my Instructables page here: http://www.instructables.com/member/Proto+G/
+
+  _____   ______  _____  _______  _____        ______
+ |_____] |_____/ |     |    |    |     |      |  ____
+ |       |    \_ |_____|    |    |_____|      |_____|
+  
+01010000011100100110111101110100011011110010000001000111
+*/
+
+#include "Adafruit_DHT/Adafruit_DHT.h"
+
+#define DHTPIN 0//Pin that the temperature/humidity sensor is connected to.
+
+// Uncomment whatever type you're using!
+#define DHTTYPE DHT11		// DHT 11 
+//define DHTTYPE DHT22		// DHT 22 (AM2302)
+//#define DHTTYPE DHT21		// DHT 21 (AM2301)
+
+// Connect pin 1 (on the left) of the sensor to +3.3V rail
+// Connect pin 2 of the sensor to whatever your DHTPIN is
+// Connect pin 4 (on the right) of the sensor to GROUND
+// Connect a 10K resistor from pin 2 (data) to pin 1 (power) of the sensor
+
+DHT dht(DHTPIN, DHTTYPE);
+
+
+double tempF;//variable for the temperature in fahrenheit.
+double tempC;//variable for the temperature in celcius.
+double h;//variable for the humidity percentage from 0-100
+
+int SensorA0;//I did not use A0 but if you want to add another sensor on A0 you can.
+int tempSensorPin = D2;
+boolean toohot = false;
+
+
+void setup() 
+{
+    pinMode(0, OUTPUT);//DHT11
+  
+    dht.begin();
+  
+    Spark.variable("SensorA0", &SensorA0, INT);//I did not use A0 but if you want to add another sensor on A0 you can.
+ 
+    Spark.variable("Temp", &tempF, DOUBLE);//temperature in fahrenheit
+    Spark.variable("Humidity", &h, DOUBLE);//humidity percentage from 0-100
+    //Spark.variable("Temp", &t, DOUBLE);//temperature in fahrenheit 
+    
+    /*
+    The limit on Spark Variables is 10 so if you want to monitor fahrenheit 
+    and celcius, just comment out an analog variable above that you are not using
+    and uncomment the celcius Spark Variable
+    */
+    
+}
+
+void loop() 
+{
+// Wait a few seconds between measurements.
+	delay(2000);
+// Reading temperature or humidity takes about 250 milliseconds!
+// Sensor readings may also be up to 2 seconds 'old' (its a 
+// very slow sensor)
+
+	float h = dht.getHumidity();
+// Read temperature as Celsius
+	tempC = dht.getTempCelcius();
+// Read temperature as Farenheit
+	tempF = dht.getTempFarenheit();
+  
+// Check if any reads failed and exit early (to try again).
+	if (isnan(h) || isnan(tempC) || isnan(tempF)) {
+		Serial.println("Failed to read from DHT sensor!");
+		return;
+	}
+
+// Compute heat index
+// Must send in temp in Fahrenheit!
+	float hi = dht.getHeatIndex();
+	float dp = dht.getDewPoint();
+	float k = dht.getTempKelvin();
+
+	Serial.print("Humid: "); 
+	Serial.print(h);
+	Serial.print("% - ");
+	Serial.print("Temp: "); 
+	//Serial.print(t);
+	//Serial.print("*C ");
+	Serial.print(tempF);
+	Serial.print("*F ");
+}
